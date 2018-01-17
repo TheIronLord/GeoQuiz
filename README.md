@@ -1,2 +1,3 @@
 # GeoQuiz
-Geography Quiz App
+
+![](Images/GeoQuizScreenShot.png)
