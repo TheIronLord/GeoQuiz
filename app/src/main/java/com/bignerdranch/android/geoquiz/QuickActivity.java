@@ -2,6 +2,7 @@ package com.bignerdranch.android.geoquiz;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -15,7 +16,9 @@ public class QuickActivity extends AppCompatActivity {
     private ImageButton mPrevButton;
     private TextView mTextView;
     private TextView mQuestionTextView;
+    private static final String TAG = "QuickActivity";
 
+    /*Questions for True and False*/
     Question[] mQuestionBank = new Question[]{
             new Question(R.string.question_australia, true),
             new Question(R.string.question_ocean, true),
@@ -25,8 +28,11 @@ public class QuickActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true)
     };
 
+    //Keeps track of the current index of the mQuestionBank array
     private int mCurrentIndex = 0;
 
+    //Get the next question from mQuestionBank and set it to the
+    //mQuestionTextView
     private void updateQuestion(){
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
@@ -47,6 +53,7 @@ public class QuickActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "OnCreate(Bundle) Called");
         setContentView(R.layout.activity_quick);
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -98,5 +105,35 @@ public class QuickActivity extends AppCompatActivity {
            }
         });
         updateQuestion();
-    } //..
-}
+    } //OnCreate
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        Log.d(TAG, "onStart() Called");
+    }//onStart()
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        Log.d(TAG, "onPause() Called");
+    }//onPause
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.d(TAG, "onStop() Called");
+    }//onStop()
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Log.d(TAG, "onDestroy() Called");
+    }//onDestroy()
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.d(TAG, "onResume() Called");
+    }
+}//QuickActivity
