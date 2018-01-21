@@ -17,6 +17,11 @@ public class QuickActivity extends AppCompatActivity {
     private TextView mTextView;
     private TextView mQuestionTextView;
     private static final String TAG = "QuickActivity";
+    private static final String KEY_INDEX = "index";
+    private float mRightAnswers = 0;
+    private int[] mAnsweredQuestions = new int[6];
+    private int mAnsweredQuestionsIndex = 0;
+    private float mQuestionSize = 6;
 
     /*Questions for True and False*/
     Question[] mQuestionBank = new Question[]{
@@ -44,24 +49,78 @@ public class QuickActivity extends AppCompatActivity {
 
         if(userPressedTrue == answerIsTrue){
             messageResId = R.string.correct_toast;
+            mRightAnswers++;
+            Log.d(TAG, "mRightAnswers: " + mRightAnswers);
         }else{
             messageResId = R.string.incorrect_toast;
         }
         Toast.makeText(QuickActivity.this, messageResId, Toast.LENGTH_SHORT).show();
     }
 
+    public void quizScore(){
+        float percentage = mRightAnswers / mQuestionSize;
+        percentage *= 100;
+        int convert = (int)percentage;
+        String percentageOutput = Integer.toString(convert);
+        percentageOutput += "%";
+        Toast.makeText(QuickActivity.this, percentageOutput, Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean answeredQuestion(){
+        int qBankIndex = mCurrentIndex;
+        for(int i = 0; i <= mAnsweredQuestionsIndex; i++){
+            if(mAnsweredQuestions[i] == qBankIndex){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void mAnsweredQuestionsOutOfBoundsCheckAndIncrement(){
+        if(mAnsweredQuestionsIndex != mQuestionSize){
+            mAnsweredQuestionsIndex++;
+        }
+    }
+
+    private void lockAnswer(){
+        mAnsweredQuestions[mAnsweredQuestionsIndex] = mCurrentIndex;
+        mAnsweredQuestionsOutOfBoundsCheckAndIncrement();
+
+        mTrueButton.setEnabled(false);
+        mFalseButton.setEnabled(false);
+    }
+
+    private void unlockButtons(){
+        mTrueButton.setEnabled(true);
+        mFalseButton.setEnabled(true);
+    }
+
+    private void nextPrevUnlockAndLockButtons(){
+        if(!answeredQuestion()) {
+            unlockButtons();
+        }else {
+            mTrueButton.setEnabled(false);
+            mFalseButton.setEnabled(false);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "OnCreate(Bundle) Called");
+        //Log.d(TAG, "OnCreate(Bundle) Called");
         setContentView(R.layout.activity_quick);
 
+        //Retrieve all of the elements from the view
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
         mTrueButton = (Button) findViewById(R.id.true_button);
         mFalseButton = (Button) findViewById(R.id.false_button);
         mNextButton = (ImageButton) findViewById(R.id.next_button);
         mPrevButton = (ImageButton) findViewById(R.id.prev_button);
         mTextView = (TextView) findViewById(R.id.question_text_view);
+
+        if(savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
+        }
 
         mTextView.setOnClickListener(new View.OnClickListener(){
            @Override
@@ -75,6 +134,7 @@ public class QuickActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 checkAnswer(true);
+                lockAnswer();
             }
         });
 
@@ -82,6 +142,7 @@ public class QuickActivity extends AppCompatActivity {
            @Override
             public void onClick(View v){
                checkAnswer(false);
+               lockAnswer();
            }
         });
 
@@ -90,18 +151,22 @@ public class QuickActivity extends AppCompatActivity {
            public void onClick(View v){
                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
                updateQuestion();
+               nextPrevUnlockAndLockButtons();
+
+               if(mAnsweredQuestionsIndex == mQuestionSize){
+                   quizScore();
+               }
            }
         });
 
         mPrevButton.setOnClickListener(new View.OnClickListener(){
            @Override
             public void onClick(View v){
-               if(mCurrentIndex == 0){
-                   mCurrentIndex = mQuestionBank.length - 1;
-               }else{
+               if(mCurrentIndex != 0){
                    mCurrentIndex--;
                }
                updateQuestion();
+               nextPrevUnlockAndLockButtons();
            }
         });
         updateQuestion();
@@ -135,5 +200,14 @@ public class QuickActivity extends AppCompatActivity {
     public void onResume(){
         super.onResume();
         Log.d(TAG, "onResume() Called");
-    }
+    }//onResume()
+
+    /*Saves the mCurrentIndex into a savedInstanceState of type
+    * Bundle to use again in onCreate(Bundle)*/
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        super.onSaveInstanceState(savedInstanceState);
+        Log.d(TAG, "onSaveInstanceState(Bundle savedInstanceState) Called");
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+    }//onSaveInstanceState(Bundle savedInstanceState)
 }//QuickActivity
