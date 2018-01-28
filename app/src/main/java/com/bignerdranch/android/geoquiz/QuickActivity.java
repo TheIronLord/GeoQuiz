@@ -1,5 +1,6 @@
 package com.bignerdranch.android.geoquiz;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,12 +13,17 @@ import android.widget.Toast;
 public class QuickActivity extends AppCompatActivity {
     private Button mTrueButton;
     private Button mFalseButton;
+    private Button mCheatButton;
+
     private ImageButton mNextButton;
     private ImageButton mPrevButton;
+
     private TextView mTextView;
     private TextView mQuestionTextView;
+
     private static final String TAG = "QuickActivity";
     private static final String KEY_INDEX = "index";
+
     private float mRightAnswers = 0;
     private int[] mAnsweredQuestions = new int[6];
     private int mAnsweredQuestionsIndex = 0;
@@ -38,11 +44,12 @@ public class QuickActivity extends AppCompatActivity {
 
     //Get the next question from mQuestionBank and set it to the
     //mQuestionTextView
-    private void updateQuestion(){
+    private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
     }
 
+    //Check if the answer is True or False and output it on the Toast
     private void checkAnswer(Boolean userPressedTrue){
         Boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId;
@@ -57,6 +64,7 @@ public class QuickActivity extends AppCompatActivity {
         Toast.makeText(QuickActivity.this, messageResId, Toast.LENGTH_SHORT).show();
     }
 
+    //Get the percentage and output it on the Toast
     public void quizScore(){
         float percentage = mRightAnswers / mQuestionSize;
         percentage *= 100;
@@ -66,6 +74,7 @@ public class QuickActivity extends AppCompatActivity {
         Toast.makeText(QuickActivity.this, percentageOutput, Toast.LENGTH_SHORT).show();
     }
 
+    //Check if the question was answered or not
     private boolean answeredQuestion(){
         int qBankIndex = mCurrentIndex;
         for(int i = 0; i <= mAnsweredQuestionsIndex; i++){
@@ -76,15 +85,10 @@ public class QuickActivity extends AppCompatActivity {
         return false;
     }
 
-    private void mAnsweredQuestionsOutOfBoundsCheckAndIncrement(){
-        if(mAnsweredQuestionsIndex != mQuestionSize){
-            mAnsweredQuestionsIndex++;
-        }
-    }
-
+    //Locks the True/False Buttons and adds mCurrentIndex to the array of
+    //mAnswerQuestions and also increments mAnswerQuestionIndex
     private void lockAnswer(){
-        mAnsweredQuestions[mAnsweredQuestionsIndex] = mCurrentIndex;
-        mAnsweredQuestionsOutOfBoundsCheckAndIncrement();
+        mAnsweredQuestions[mAnsweredQuestionsIndex++] = mCurrentIndex;
 
         mTrueButton.setEnabled(false);
         mFalseButton.setEnabled(false);
@@ -95,6 +99,8 @@ public class QuickActivity extends AppCompatActivity {
         mFalseButton.setEnabled(true);
     }
 
+    //Check if the question was answered of not
+    // to see if the buttons should be enabled of disableds
     private void nextPrevUnlockAndLockButtons(){
         if(!answeredQuestion()) {
             unlockButtons();
@@ -104,10 +110,11 @@ public class QuickActivity extends AppCompatActivity {
         }
     }
 
+
+    ////////////////////////////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Log.d(TAG, "OnCreate(Bundle) Called");
         setContentView(R.layout.activity_quick);
 
         //Retrieve all of the elements from the view
@@ -116,12 +123,16 @@ public class QuickActivity extends AppCompatActivity {
         mFalseButton = (Button) findViewById(R.id.false_button);
         mNextButton = (ImageButton) findViewById(R.id.next_button);
         mPrevButton = (ImageButton) findViewById(R.id.prev_button);
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
         mTextView = (TextView) findViewById(R.id.question_text_view);
 
+        //Retrieves the savedInstanceState if there is information in it
         if(savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
         }
 
+        /*Displays the text on the screen and also has the ability to go the
+        * the next question if it is pressed*/
         mTextView.setOnClickListener(new View.OnClickListener(){
            @Override
             public void onClick(View v){
@@ -129,7 +140,7 @@ public class QuickActivity extends AppCompatActivity {
                updateQuestion();
            }
         });
-
+        //WHen mTrueButton is pressed it will call lockAnswer and checkAnswer
         mTrueButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
@@ -137,7 +148,7 @@ public class QuickActivity extends AppCompatActivity {
                 lockAnswer();
             }
         });
-
+        //WHen mFalseButton is pressed it will call lockAnswer and checkAnswer
         mFalseButton.setOnClickListener(new View.OnClickListener() {
            @Override
             public void onClick(View v){
@@ -145,7 +156,7 @@ public class QuickActivity extends AppCompatActivity {
                lockAnswer();
            }
         });
-
+        /*When mNextButton is press it will go to the next question*/
         mNextButton.setOnClickListener(new View.OnClickListener(){
            @Override
            public void onClick(View v){
@@ -158,7 +169,7 @@ public class QuickActivity extends AppCompatActivity {
                }
            }
         });
-
+        /*When mPrevButton is pressed it will go back to the previous question*/
         mPrevButton.setOnClickListener(new View.OnClickListener(){
            @Override
             public void onClick(View v){
@@ -169,38 +180,17 @@ public class QuickActivity extends AppCompatActivity {
                nextPrevUnlockAndLockButtons();
            }
         });
+        mCheatButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                //Start Cheat Activity
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(QuickActivity.this, answerIsTrue);
+                startActivity(intent);
+            }
+        });
         updateQuestion();
     } //OnCreate
-
-    @Override
-    public void onStart(){
-        super.onStart();
-        Log.d(TAG, "onStart() Called");
-    }//onStart()
-
-    @Override
-    public void onPause(){
-        super.onPause();
-        Log.d(TAG, "onPause() Called");
-    }//onPause
-
-    @Override
-    public void onStop(){
-        super.onStop();
-        Log.d(TAG, "onStop() Called");
-    }//onStop()
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        Log.d(TAG, "onDestroy() Called");
-    }//onDestroy()
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        Log.d(TAG, "onResume() Called");
-    }//onResume()
 
     /*Saves the mCurrentIndex into a savedInstanceState of type
     * Bundle to use again in onCreate(Bundle)*/
