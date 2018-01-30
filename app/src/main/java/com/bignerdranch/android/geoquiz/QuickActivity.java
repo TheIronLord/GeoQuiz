@@ -1,5 +1,6 @@
 package com.bignerdranch.android.geoquiz;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,23 +12,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class QuickActivity extends AppCompatActivity {
-    private Button mTrueButton;
-    private Button mFalseButton;
-    private Button mCheatButton;
+    private Button              mTrueButton;
+    private Button              mFalseButton;
+    private Button              mCheatButton;
 
-    private ImageButton mNextButton;
-    private ImageButton mPrevButton;
+    private ImageButton         mNextButton;
+    private ImageButton         mPrevButton;
 
-    private TextView mTextView;
-    private TextView mQuestionTextView;
+    private TextView            mTextView;
+    private TextView            mQuestionTextView;
 
     private static final String TAG = "QuickActivity";
     private static final String KEY_INDEX = "index";
+    private static final int    REQUEST_CODE_CHEAT = 0;
 
-    private float mRightAnswers = 0;
-    private int[] mAnsweredQuestions = new int[6];
-    private int mAnsweredQuestionsIndex = 0;
-    private float mQuestionSize = 6;
+    private int[]               mAnsweredQuestions = new int[6];
+    private int                 mAnsweredQuestionsIndex = 0;
+    private float               mQuestionSize = 6;
+    private float               mRightAnswers = 0;
+    private boolean             mIsCheater;
 
     /*Questions for True and False*/
     Question[] mQuestionBank = new Question[]{
@@ -53,13 +56,15 @@ public class QuickActivity extends AppCompatActivity {
     private void checkAnswer(Boolean userPressedTrue){
         Boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId;
-
-        if(userPressedTrue == answerIsTrue){
-            messageResId = R.string.correct_toast;
-            mRightAnswers++;
-            Log.d(TAG, "mRightAnswers: " + mRightAnswers);
+        if(mIsCheater){
+            messageResId = R.string.judgement_toast;
         }else{
-            messageResId = R.string.incorrect_toast;
+            if(userPressedTrue == answerIsTrue){
+                messageResId = R.string.correct_toast;
+                mRightAnswers++;
+            }else{
+                messageResId = R.string.incorrect_toast;
+            }
         }
         Toast.makeText(QuickActivity.this, messageResId, Toast.LENGTH_SHORT).show();
     }
@@ -148,7 +153,7 @@ public class QuickActivity extends AppCompatActivity {
                 lockAnswer();
             }
         });
-        //WHen mFalseButton is pressed it will call lockAnswer and checkAnswer
+        //When mFalseButton is pressed it will call lockAnswer and checkAnswer
         mFalseButton.setOnClickListener(new View.OnClickListener() {
            @Override
             public void onClick(View v){
@@ -161,6 +166,7 @@ public class QuickActivity extends AppCompatActivity {
            @Override
            public void onClick(View v){
                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+               mIsCheater = false;
                updateQuestion();
                nextPrevUnlockAndLockButtons();
 
@@ -180,17 +186,31 @@ public class QuickActivity extends AppCompatActivity {
                nextPrevUnlockAndLockButtons();
            }
         });
+
         mCheatButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 //Start Cheat Activity
                 boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(QuickActivity.this, answerIsTrue);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
         updateQuestion();
     } //OnCreate
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode != Activity.RESULT_OK){
+            return;
+        }else if(requestCode == REQUEST_CODE_CHEAT){
+            if(data == null){
+                return;
+            }else{
+                mIsCheater = CheatActivity.wasAnswerShown(data);
+            }
+        }
+    }
 
     /*Saves the mCurrentIndex into a savedInstanceState of type
     * Bundle to use again in onCreate(Bundle)*/

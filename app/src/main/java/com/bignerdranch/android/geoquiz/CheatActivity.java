@@ -10,19 +10,36 @@ import android.widget.TextView;
 
 public class CheatActivity extends AppCompatActivity {
     private static final String EXTRA_ANSWER_IS_TRUE = "com.bignerdranch.geoquiz.answer_is_true";
+    private static final String EXTRA_ANSWER_SHOWN = "com.bignerdranch.geoquiz.answer_shown";
+
     private boolean mAnswerIsTrue;
 
     private Button mShowAnswerButton;
-
     private TextView mAnswerTextView;
 
-    //Static method that is called in other activities to create the Intent and
-    //set up the Extras and return the Intent
+
+    /*Static methods*/
+    /*newIntent is called in QuickActivity to create the Intent,
+    * put the answer in it and return it*/
     public static Intent newIntent(Context packageContent, boolean answerIsTrue){
         Intent intent = new Intent(packageContent, CheatActivity.class);
         intent.putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue);
         return intent;
     }
+    /*Lets QuickActivity know if the answer was shown*/
+    public static boolean wasAnswerShown(Intent result){
+        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
+    }
+
+    /*Private Method*/
+    private void setAnswerShownResult(boolean isAnswerShown){
+        //Set result
+        Intent data = new Intent();
+        data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+        setResult(RESULT_OK, data);
+    }
+
+    /*Override Methods*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +62,9 @@ public class CheatActivity extends AppCompatActivity {
                 }else{
                     mAnswerTextView.setText(R.string.false_button);
                 }
+                setAnswerShownResult(true);
             }
         });
-    }
+    }//onCreate()
+
 }
