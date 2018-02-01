@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -22,15 +21,18 @@ public class QuickActivity extends AppCompatActivity {
     private TextView            mTextView;
     private TextView            mQuestionTextView;
 
-    private static final String TAG = "QuickActivity";
     private static final String KEY_INDEX = "index";
+    private static final String M_CHEATED_KEY = "mCheated";
+    private static final String M_ANSWERED_QUESTIONS_KEY = "mAnsweredQuestions";
+    private static final String M_ANSWERED_QUESTIONS_INDEX_KEY = "mAnsweredQuestionsIndex";
     private static final int    REQUEST_CODE_CHEAT = 0;
 
     private int[]               mAnsweredQuestions = new int[6];
+    private boolean[]           mCheated = new boolean[6];
+
     private int                 mAnsweredQuestionsIndex = 0;
     private float               mQuestionSize = 6;
     private float               mRightAnswers = 0;
-    private boolean             mIsCheater;
 
     /*Questions for True and False*/
     Question[] mQuestionBank = new Question[]{
@@ -56,7 +58,7 @@ public class QuickActivity extends AppCompatActivity {
     private void checkAnswer(Boolean userPressedTrue){
         Boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId;
-        if(mIsCheater){
+        if(mCheated[mCurrentIndex]){
             messageResId = R.string.judgement_toast;
         }else{
             if(userPressedTrue == answerIsTrue){
@@ -105,7 +107,7 @@ public class QuickActivity extends AppCompatActivity {
     }
 
     //Check if the question was answered of not
-    // to see if the buttons should be enabled of disableds
+    // to see if the buttons should be enabled of disables
     private void nextPrevUnlockAndLockButtons(){
         if(!answeredQuestion()) {
             unlockButtons();
@@ -115,6 +117,15 @@ public class QuickActivity extends AppCompatActivity {
         }
     }
 
+    private void isQuestionAnswered(){
+        //Check if the question was answered
+        boolean answered;
+        answered = answeredQuestion();
+        if(answered){
+            mTrueButton.setEnabled(false);
+            mFalseButton.setEnabled(false);
+        }
+    }
 
     ////////////////////////////////////////////////////////////////
     @Override
@@ -130,10 +141,16 @@ public class QuickActivity extends AppCompatActivity {
         mPrevButton = (ImageButton) findViewById(R.id.prev_button);
         mCheatButton = (Button) findViewById(R.id.cheat_button);
         mTextView = (TextView) findViewById(R.id.question_text_view);
+        mAnsweredQuestions[0] = -1;
 
         //Retrieves the savedInstanceState if there is information in it
         if(savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
+
+            mCheated = savedInstanceState.getBooleanArray(M_CHEATED_KEY);
+
+            mAnsweredQuestions = savedInstanceState.getIntArray(M_ANSWERED_QUESTIONS_KEY);
+            mAnsweredQuestionsIndex = savedInstanceState.getInt(M_ANSWERED_QUESTIONS_INDEX_KEY);
         }
 
         /*Displays the text on the screen and also has the ability to go the
@@ -166,7 +183,6 @@ public class QuickActivity extends AppCompatActivity {
            @Override
            public void onClick(View v){
                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-               mIsCheater = false;
                updateQuestion();
                nextPrevUnlockAndLockButtons();
 
@@ -197,6 +213,7 @@ public class QuickActivity extends AppCompatActivity {
             }
         });
         updateQuestion();
+        isQuestionAnswered();
     } //OnCreate
 
     @Override
@@ -207,17 +224,19 @@ public class QuickActivity extends AppCompatActivity {
             if(data == null){
                 return;
             }else{
-                mIsCheater = CheatActivity.wasAnswerShown(data);
+                mCheated[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
             }
         }
     }
 
-    /*Saves the mCurrentIndex into a savedInstanceState of type
-    * Bundle to use again in onCreate(Bundle)*/
+    /* Saves the values into a savedInstanceState
+     * of typeBundle to use again in onCreate(Bundle)*/
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState){
         super.onSaveInstanceState(savedInstanceState);
-        Log.d(TAG, "onSaveInstanceState(Bundle savedInstanceState) Called");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putBooleanArray(M_CHEATED_KEY, mCheated);
+        savedInstanceState.putIntArray(M_ANSWERED_QUESTIONS_KEY, mAnsweredQuestions);
+        savedInstanceState.putInt(M_ANSWERED_QUESTIONS_INDEX_KEY, mAnsweredQuestionsIndex);
     }//onSaveInstanceState(Bundle savedInstanceState)
 }//QuickActivity
