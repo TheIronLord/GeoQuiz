@@ -1,6 +1,6 @@
 # GeoQuiz
 
-## update 4
+## UPDATE 4
 ![Final GeoQuiz](Images/UPDATE4.png)
 
 ## UPDATE 3.9
