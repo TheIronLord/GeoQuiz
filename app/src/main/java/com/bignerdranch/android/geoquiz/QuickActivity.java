@@ -22,12 +22,14 @@ public class QuickActivity extends AppCompatActivity {
     private TextView            mTextView;
     private TextView            mQuestionTextView;
     private TextView            mVersionNumberTextView;
+    private TextView            mCheatTokenTextView;
 
     private static final String KEY_INDEX = "index";
     private static final String M_CHEATED_KEY = "mCheated";
     private static final String M_ANSWERED_QUESTIONS_KEY = "mAnsweredQuestions";
     private static final String M_ANSWERED_QUESTIONS_INDEX_KEY = "mAnsweredQuestionsIndex";
     private static final int    REQUEST_CODE_CHEAT = 0;
+    private static final String M_CHEAT_TOKEN = "mTotalCheatsInt";
 
     private int[]               mAnsweredQuestions = new int[6];
     private boolean[]           mCheated = new boolean[6];
@@ -35,6 +37,7 @@ public class QuickActivity extends AppCompatActivity {
     private int                 mAnsweredQuestionsIndex = 0;
     private float               mQuestionSize = 6;
     private float               mRightAnswers = 0;
+    private int                 mTotalCheatsInt = 3;
 
     /*Questions for True and False*/
     Question[] mQuestionBank = new Question[]{
@@ -71,6 +74,12 @@ public class QuickActivity extends AppCompatActivity {
             }
         }
         Toast.makeText(QuickActivity.this, messageResId, Toast.LENGTH_SHORT).show();
+    }
+
+    private void cheatingAllowed(){
+        if(mTotalCheatsInt == 0){
+            mCheatButton.setEnabled(false);
+        }
     }
 
     //Get the percentage and output it on the Toast
@@ -144,6 +153,7 @@ public class QuickActivity extends AppCompatActivity {
         mCheatButton = (Button) findViewById(R.id.cheat_button);
         mTextView = (TextView) findViewById(R.id.question_text_view);
         mVersionNumberTextView = (TextView) findViewById(R.id.version_number);
+        mCheatTokenTextView = (TextView) findViewById(R.id.cheat_token);
         mAnsweredQuestions[0] = -1;
 
         //Retrieves the savedInstanceState if there is information in it
@@ -151,6 +161,7 @@ public class QuickActivity extends AppCompatActivity {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
 
             mCheated = savedInstanceState.getBooleanArray(M_CHEATED_KEY);
+            mTotalCheatsInt = savedInstanceState.getInt(M_CHEAT_TOKEN);
 
             mAnsweredQuestions = savedInstanceState.getIntArray(M_ANSWERED_QUESTIONS_KEY);
             mAnsweredQuestionsIndex = savedInstanceState.getInt(M_ANSWERED_QUESTIONS_INDEX_KEY);
@@ -215,9 +226,13 @@ public class QuickActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
-        mVersionNumberTextView.setText("API Level: " + Build.VERSION.SDK_INT);
+
+        //Set up the widgets
+        mVersionNumberTextView.setText("API Level " + Build.VERSION.SDK_INT);
+        mCheatTokenTextView.setText("Total Cheat Token " + mTotalCheatsInt);
         updateQuestion();
         isQuestionAnswered();
+        cheatingAllowed();
     } //OnCreate
 
     @Override
@@ -229,8 +244,13 @@ public class QuickActivity extends AppCompatActivity {
                 return;
             }else{
                 //Put true or false into the array to keep track if the user
-                //cheated on the question
+                //cheated on the question, minus 1 from mTotalCheatsInt, Check
+                //if the user can still cheat and change the text for
+                //mCheatTokenTextView
                 mCheated[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
+                --mTotalCheatsInt;
+                cheatingAllowed();
+                mCheatTokenTextView.setText("Total Cheat Token " + mTotalCheatsInt);
             }
         }
     }//onActivityResult()
@@ -244,5 +264,7 @@ public class QuickActivity extends AppCompatActivity {
         savedInstanceState.putBooleanArray(M_CHEATED_KEY, mCheated);
         savedInstanceState.putIntArray(M_ANSWERED_QUESTIONS_KEY, mAnsweredQuestions);
         savedInstanceState.putInt(M_ANSWERED_QUESTIONS_INDEX_KEY, mAnsweredQuestionsIndex);
+        savedInstanceState.putInt(M_CHEAT_TOKEN, mTotalCheatsInt);
+        mCheatTokenTextView.setText("Total Cheat Token " + mTotalCheatsInt);
     }//onSaveInstanceState(Bundle savedInstanceState)
 }//QuickActivity
