@@ -1,7 +1,10 @@
 # GeoQuiz
 
+## UPDATE 6
+![Update 6](Images/Update6.png)
+
 ## UPDATE 4
-![Final GeoQuiz](Images/UPDATE4.png)
+![Update 4](Images/UPDATE4.png)
 
 ## UPDATE 3.9
 ![Update 3.9](Images/UPDATE3.9.png)
