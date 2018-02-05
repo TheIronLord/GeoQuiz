@@ -2,6 +2,7 @@ package com.bignerdranch.android.geoquiz;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,6 +21,7 @@ public class QuickActivity extends AppCompatActivity {
 
     private TextView            mTextView;
     private TextView            mQuestionTextView;
+    private TextView            mVersionNumberTextView;
 
     private static final String KEY_INDEX = "index";
     private static final String M_CHEATED_KEY = "mCheated";
@@ -127,7 +129,7 @@ public class QuickActivity extends AppCompatActivity {
         }
     }
 
-    ////////////////////////////////////////////////////////////////
+    /*onCreate()*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +143,7 @@ public class QuickActivity extends AppCompatActivity {
         mPrevButton = (ImageButton) findViewById(R.id.prev_button);
         mCheatButton = (Button) findViewById(R.id.cheat_button);
         mTextView = (TextView) findViewById(R.id.question_text_view);
+        mVersionNumberTextView = (TextView) findViewById(R.id.version_number);
         mAnsweredQuestions[0] = -1;
 
         //Retrieves the savedInstanceState if there is information in it
@@ -212,6 +215,7 @@ public class QuickActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
+        mVersionNumberTextView.setText("API Level: " + Build.VERSION.SDK_INT);
         updateQuestion();
         isQuestionAnswered();
     } //OnCreate
@@ -224,10 +228,12 @@ public class QuickActivity extends AppCompatActivity {
             if(data == null){
                 return;
             }else{
+                //Put true or false into the array to keep track if the user
+                //cheated on the question
                 mCheated[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
             }
         }
-    }
+    }//onActivityResult()
 
     /* Saves the values into a savedInstanceState
      * of typeBundle to use again in onCreate(Bundle)*/
