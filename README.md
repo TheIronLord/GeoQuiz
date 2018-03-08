@@ -1,5 +1,8 @@
 # GeoQuiz
 
+## Repo Description
+Utilized Java, XML, and Android Studio to build a geography quiz app for Android devices, which enables users to answer numerous true or false questions. Prepared technical documentation, including use case documents, class diagrams, and low-fidelity and high-fidelity user interface designs.
+
 ## UPDATE 6
 ![Update 6](Images/Update6.png)
 
